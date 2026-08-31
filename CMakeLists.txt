@@ -60,13 +60,37 @@ else()
 
     target_include_directories(dpct
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
 
     add_library(dpct::dpct ALIAS dpct)
     set_target_properties(dpct PROPERTIES
         EXPORT_NAME dpct
+    )
+
+    # Consumers (src/*.cpp, python/*.cpp) include headers as <dpct/foo.h>.
+    # After `make install`, that layout exists because headers are copied to
+    # ${prefix}/include/dpct/*.h. But target_include_directories'
+    # BUILD_INTERFACE above pointed straight at the flat source include/
+    # directory (no dpct/ subfolder), so an in-tree/single-stage build (as
+    # opposed to conda's two-stage build, which always builds against an
+    # *installed* dpct) failed to resolve <dpct/foo.h>. Mirror the installed
+    # layout in the build tree via a symlinked include/dpct/ so both build
+    # and install interfaces agree.
+    set(DPCT_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
+    file(MAKE_DIRECTORY "${DPCT_BUILD_INCLUDE_DIR}")
+    if(NOT EXISTS "${DPCT_BUILD_INCLUDE_DIR}/dpct")
+        file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/include" "${DPCT_BUILD_INCLUDE_DIR}/dpct"
+             SYMBOLIC RESULT _dpct_link_result)
+        if(NOT _dpct_link_result EQUAL 0)
+            message(STATUS "dpct: symlinking include/ as dpct/ failed (${_dpct_link_result}), copying headers instead")
+            file(REMOVE_RECURSE "${DPCT_BUILD_INCLUDE_DIR}/dpct")
+            file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "${DPCT_BUILD_INCLUDE_DIR}/dpct")
+        endif()
+    endif()
+    target_include_directories(dpct
+        PUBLIC
+            $<BUILD_INTERFACE:${DPCT_BUILD_INCLUDE_DIR}>
     )
 
     # installation
