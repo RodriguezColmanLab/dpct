@@ -1,5 +1,0 @@
-name: bld-env
-channels:
-  - conda-forge
-dependencies:
-  - rattler-build

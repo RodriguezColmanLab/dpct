@@ -1,6 +1,0 @@
-name: bld-env
-channels:
-  - conda-forge
-dependencies:
-  - anaconda-client
-  - rattler-build
