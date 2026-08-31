@@ -22,6 +22,12 @@ set(_dpct_vendor_common_args
     -DBUILD_SHARED_LIBS=OFF
     -DCMAKE_INSTALL_PREFIX=${DPCT_VENDOR_PREFIX}
     -DCMAKE_PREFIX_PATH=${DPCT_VENDOR_PREFIX}
+    # LEMON 1.3.1 (and possibly other older vendored deps) declare an old
+    # cmake_minimum_required() that newer CMake (>=4.0) refuses to configure
+    # at all ("Compatibility with CMake < 3.5 has been removed"). We don't
+    # control their CMakeLists.txt, so tell CMake to treat their minimum as
+    # 3.5 rather than failing outright.
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 )
 if(CMAKE_TOOLCHAIN_FILE)
     list(APPEND _dpct_vendor_common_args -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
