@@ -14,7 +14,11 @@ requires-python = ">=3.9"
 Homepage = "https://github.com/ilastik/dpct"
 
 [tool.scikit-build]
-cmake.version = ">=3.27"
+# Capped below 4.0: CMake 4.x removed OLD-policy support (e.g. CMP0048)
+# outright, which breaks configuring LEMON 1.3.1's own unmaintained
+# CMakeLists.txt when it is fetched/built from source in cmake/VendorDeps.cmake.
+# Staying on the 3.x line avoids that whole class of incompatibility.
+cmake.version = ">=3.27,<4"
 build.verbose = true
 logging.level = "INFO"
 
