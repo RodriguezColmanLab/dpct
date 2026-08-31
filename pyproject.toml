@@ -1,0 +1,32 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "dpct"
+version = "1.7.0"
+description = "Dynamic Programming Cell Tracking Solver Library"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+
+[project.urls]
+Homepage = "https://github.com/ilastik/dpct"
+
+[tool.scikit-build]
+cmake.version = ">=3.27"
+build.verbose = true
+logging.level = "INFO"
+
+# scikit-build-core automatically adds the CMake config directories of
+# build-time Python dependencies that ship one (e.g. pybind11) to
+# CMAKE_PREFIX_PATH, so no extra wiring is needed for `find_package(pybind11
+# CONFIG)` in python/CMakeLists.txt to succeed.
+
+[tool.scikit-build.cmake.define]
+WITH_PYTHON = "ON"
+WITH_BIN = "OFF"
+WITH_TESTS = "OFF"
+MULTI_STAGE_BUILD = "OFF"
+DPCT_VENDOR_DEPS = "ON"
+DPCT_STATIC_LIB = "ON"

@@ -10,6 +10,12 @@ option(WITH_LOG "Enable logs." OFF)
 option(WITH_PYTHON "Build python wrapper." ON)
 option(WITH_BIN "Build track executable." ON)
 option(MULTI_STAGE_BUILD "Enable conda build of the Python packages with multiple outputs" OFF)
+option(DPCT_VENDOR_DEPS "Fetch and build LEMON/jsoncpp from source instead of requiring them preinstalled (useful for `pip install`)" OFF)
+option(DPCT_STATIC_LIB "Build libdpct as a static, position-independent library so it can be baked into the Python extension module without needing to ship/locate a separate shared library at runtime" OFF)
+
+if(DPCT_VENDOR_DEPS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/VendorDeps.cmake)
+endif()
 
 
 if(WITH_LOG)
@@ -41,7 +47,15 @@ else()
     file(GLOB_RECURSE HEADERS include/*.h)
     include_directories(${LEMON_INCLUDE_DIR})
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
-    add_library(dpct SHARED ${SOURCES} ${HEADERS})
+
+    if(DPCT_STATIC_LIB)
+        set(_dpct_lib_type STATIC)
+        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    else()
+        set(_dpct_lib_type SHARED)
+    endif()
+
+    add_library(dpct ${_dpct_lib_type} ${SOURCES} ${HEADERS})
     target_link_libraries(dpct ${LEMON_LIBRARIES} JsonCpp::JsonCpp)
 
     target_include_directories(dpct

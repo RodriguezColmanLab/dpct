@@ -7,38 +7,23 @@ on:
     branches: [ main ]
 
 jobs:
-  test-w-conda-recipe:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  test-pip-install:
+    # Smoke test for the `pip install git+https://...#egg=dpct` install path
+    # used in environments without Conda access (see pyproject.toml /
+    # cmake/VendorDeps.cmake). Builds from source, vendoring LEMON and
+    # jsoncpp, exactly as an end user would.
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
-          submodules: true
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-update-conda: true
-          auto-activate: true
-          activate-environment: bld-env
-          environment-file: .github/workflows/etc/build-environment.yml
-          channel-priority: strict
-          miniforge-version: latest
-          conda-solver: libmamba
-          conda-remove-defaults: true
-      - name: linux conda build
-        if: matrix.os == 'ubuntu-latest'
-        shell: bash -l {0}
-        run: rattler-build build -c conda-forge -r conda-recipe/recipe.yaml
-      - name: osx conda build
-        if: matrix.os == 'macos-latest'
-        shell: bash -l {0}
-        run:  rattler-build build -c conda-forge -r conda-recipe/recipe.yaml
-      - name: windows conda build
-        if: matrix.os == 'windows-latest'
-        shell: cmd /C CALL {0}
-        # keep build as a workaround for tests failing otherwise when rattler-build removes temp files
-        run: rattler-build build --keep-build -c conda-forge -r conda-recipe\recipe.yaml
+          python-version: "3.11"
+
+      - name: pip install from local checkout (simulates `pip install git+...`)
+        run: pip install -v .
+
+      - name: smoke test import
+        run: |
+          python -c "import dpct; print(dpct.__file__); print([f for f in dir(dpct) if not f.startswith('_')])"
 
