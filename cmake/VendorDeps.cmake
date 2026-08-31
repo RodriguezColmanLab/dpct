@@ -53,6 +53,22 @@ function(dpct_build_vendored_dep name)
     set(_src "${${name}_SOURCE_DIR}")
     set(_bin "${${name}_BINARY_DIR}")
 
+    # LEMON 1.3.1's own top-level CMakeLists.txt explicitly does
+    # `cmake_policy(SET CMP0048 OLD)`. CMake >= 4.0 removed OLD support for
+    # CMP0048 entirely (not just deprecated it), so this line makes
+    # configure fail outright regardless of CMAKE_POLICY_VERSION_MINIMUM,
+    # which only affects the *minimum required version* check, not explicit
+    # policy-set calls. We don't control this upstream file, so patch it out
+    # of the fetched source before configuring.
+    if(EXISTS "${_src}/CMakeLists.txt")
+        file(READ "${_src}/CMakeLists.txt" _cmakelists_contents)
+        string(REGEX REPLACE
+            "cmake_policy\\(SET CMP0048 OLD\\)"
+            "cmake_policy(SET CMP0048 NEW)\nset(LEMON_VERSION 1.3.1)"
+            _cmakelists_contents "${_cmakelists_contents}")
+        file(WRITE "${_src}/CMakeLists.txt" "${_cmakelists_contents}")
+    endif()
+
     message(STATUS "dpct: configuring vendored dependency '${name}'")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -S "${_src}" -B "${_bin}"
