@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 message( "\nConfiguring python wrapper:" )
 
-find_package(Python REQUIRED Interpreter Development)
+find_package(Python REQUIRED Interpreter)
 find_package(pybind11 CONFIG)
 
 # include external headers as system includes so we do not have to cope with their warnings
