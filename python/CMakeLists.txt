@@ -5,7 +5,15 @@ find_package(Python REQUIRED Interpreter)
 find_package(pybind11 CONFIG)
 
 # include external headers as system includes so we do not have to cope with their warnings
-include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+# Obtain the Python include directory from the configured Python interpreter.
+# This works even if CMake's FindPython 'Development' component didn't provide
+# Python_INCLUDE_DIRS inside the manylinux/cibuildwheel container.
+execute_process(
+  COMMAND ${Python_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_paths()['include'])"
+  OUTPUT_VARIABLE PYTHON_SYSCONFIG_INCLUDE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+include_directories(SYSTEM ${PYTHON_SYSCONFIG_INCLUDE})
 
 set(PYDPCT_SRCS pydpct.cpp pythongraphreader.cpp)
 add_library(dpct_python MODULE ${PYDPCT_SRCS})
