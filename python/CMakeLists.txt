@@ -11,6 +11,10 @@ set(PYDPCT_SRCS pydpct.cpp pythongraphreader.cpp)
 add_library(dpct_python MODULE ${PYDPCT_SRCS})
 # Remove default 'lib' prefix on some platforms and ensure output name 'dpct'
 set_target_properties(dpct_python PROPERTIES PREFIX "" OUTPUT_NAME dpct)
+# Make sure pybind11 headers are used; if pybind11 exports a target, link it
+# (pybind11 is header-only for the usual case)
+target_include_directories(dpct_python PRIVATE ${pybind11_INCLUDE_DIRS})
+target_link_libraries(dpct_python PRIVATE dpct::dpct pybind11::pybind11)
 
 # scikit-build-core (used for `pip install`) stages the wheel's
 # platform-lib directory in SKBUILD_PLATLIB_DIR; a conda build has no such
