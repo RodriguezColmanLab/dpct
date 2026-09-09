@@ -45,12 +45,10 @@ jobs:
           CIBW_BUILD: "cp311-* cp312-*"
         run: |
           pip install cibuildwheel
-          cibuildwheel --output-dir wheelhouse
+          cibuildwheel --output-dir dist
 
       - name: Show produced archives
         run: |
-          echo "Contents of wheelhouse (if any):"
-          ls -la wheelhouse || true
           echo "Contents of dist (if any):"
           ls -la dist || true
 
@@ -58,6 +56,4 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-package-distributions
-          path: |
-            wheelhouse
-            dist
+          path: dist

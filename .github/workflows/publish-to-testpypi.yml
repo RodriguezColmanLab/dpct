@@ -21,9 +21,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: python-package-distributions
-          path: dist/
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: dist
 
       - name: Install Python
         uses: actions/setup-python@v5
