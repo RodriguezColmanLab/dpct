@@ -20,15 +20,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set up Python (helper for some build steps)
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: Install build-time Python dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install build scikit-build-core pybind11
 
       - name: Build source distribution (sdist)
@@ -40,13 +41,11 @@ jobs:
 
       - name: Build wheels with cibuildwheel
         env:
-          CIBW_OUTPUT_DIR: wheelhouse
-          # Build for supported CPython versions; platform-specific wheels
+          # Specifies which versions we compile for - https://cibuildwheel.pypa.io/en/stable/options/#build-skip
           CIBW_BUILD: "cp311-* cp312-*"
         run: |
-          python -m pip install --upgrade pip
           pip install cibuildwheel
-          python -m cibuildwheel --output-dir wheelhouse
+          cibuildwheel --output-dir wheelhouse
 
       - name: Show produced archives
         run: |
